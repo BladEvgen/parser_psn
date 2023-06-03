@@ -8,7 +8,7 @@ the rest, in the progress folder there will be versions with different ideas and
 
 .env must located before parse folder, example 
 parser_psn/
-    .env <--not a folder \n
+    .env <--not a folder
     /parse/
         /progress/
             psn_parser_test.py
