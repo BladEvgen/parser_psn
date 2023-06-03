@@ -6,13 +6,7 @@ https://playstation.com/example/n
 Versions that I consider more working (in my understanding) will be located in the works folder
 the rest, in the progress folder there will be versions with different ideas and testing versions
 
-.env must located before parse folder, example 
-parser_psn/
-    .env <--not a folder
-    /parse/
-        /progress/
-            psn_parser_test.py
-        /url/
-            url.txt
-        /works/
-            psn_parser_v1.py
+.env must located before parse folder, 
+main_folder/
+.env 
+/parse/
