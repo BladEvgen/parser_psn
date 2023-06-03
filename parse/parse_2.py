@@ -15,13 +15,12 @@ if os.path.exists(dotenv_path):
 bot_token = os.getenv('bot_token')
 chat_id = os.getenv('chat_id')
 
-# Чтение url из файла, также установка директории по умолчанию где лежит основной файл
+# Read URLs from a file and store them in a list
 file_path = os.path.join(os.path.dirname(__file__), "url.txt")
 with open(file_path, "r") as file:
     urls = file.read().split(",")
 
-# Устанавливаем заголовки для HTTP-запросов.
-# Эти заголовки могут быть использованы для подделки данных о браузере и платформе.
+# Set headers for HTTP requests
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36",
     "sec-ch-ua": '"Google Chrome";v="113", "Chromium";v="113", "Not-A.Brand";v="24"',
@@ -29,8 +28,7 @@ headers = {
     "sec-ch-ua-platform": '"Windows"',
 }
 
-# Функция fetch выполняет асинхронный HTTP-запрос с использованием aiohttp.
-# Она отправляет GET-запрос на указанный URL с заданными заголовками и возвращает текст ответа.
+# Function to perform an asynchronous HTTP request using aiohttp
 async def fetch(session, url):
     try:
         async with session.get(url, headers=headers) as response:
@@ -39,10 +37,7 @@ async def fetch(session, url):
         print(f"An error occurred during the request: {e}")
         return None
 
-# Функция process_url обрабатывает каждый URL.
-# Она создает новую сессию aiohttp, выполняет запрос с помощью функции fetch,
-# парсит HTML-код с помощью BeautifulSoup и извлекает заголовок и цену (если они присутствуют).
-# Затем она формирует сообщение с текущей датой и временем, заголовком и ценой, и отправляет его через Telegram Bot API.
+# Function to process each URL asynchronously
 async def process_url(url):
     try:
         async with aiohttp.ClientSession() as session:
@@ -60,27 +55,31 @@ async def process_url(url):
         print(f"An error occurred during the processing of the URL: {e}")
         return None
 
+# Main function to run the program
 async def main():
+    # Start tracking memory allocation
     tracemalloc.start()
     try:
         async with aiohttp.ClientSession() as session:
             tasks = []
-            results = []  # Список для хранения результатов обработки каждого URL
+            results = []
             for url in urls:
                 url = url.strip()
                 task = asyncio.ensure_future(process_url(url))
                 tasks.append(task)
 
+            # Gather results from all the tasks
             results = await asyncio.gather(*tasks)
 
-        # Добавляем текущую дату и время в начало строки
+        # Get the current date and time
         current_datetime = datetime.now().strftime("Current time: %d.%m.%Y\n%H:%M \n\n")
         message = current_datetime + "\n\n\n".join(results)
 
-        # Отправляем сообщение через Telegram Bot API
+        # Send the message using Telegram Bot API
         bot = telebot.TeleBot(bot_token)
         bot.send_message(chat_id, message, parse_mode="HTML")
 
+        # Take a snapshot of memory allocation
         snapshot = tracemalloc.take_snapshot()
         top_stats = snapshot.statistics("lineno")
         print("[ Top 10 Memory Usage ]")
@@ -91,5 +90,6 @@ async def main():
     except Exception as e:
         print(f"An error occurred during the execution of the program: {e}")
 
+# Run the main function using the asyncio event loop
 loop = asyncio.get_event_loop()
 loop.run_until_complete(main())
