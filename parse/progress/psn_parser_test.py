@@ -44,7 +44,7 @@ async def process_url(url):
             html = await fetch(session, url)
             if html is not None:
                 soup = BeautifulSoup(html, "html.parser")
-                title_element = soup.find("h1")
+                title_element = soup.find("h1", class_="psw-m-b-5 psw-t-title-l psw-t-size-8 psw-l-line-break-word")
                 price_element = soup.find("span", class_="psw-t-title-m")
                 title = title_element.text.strip() if title_element else "Title not found"
                 price = price_element.text.strip() if price_element else "Price not found"
