@@ -5,3 +5,5 @@ https://playstation.com/example/n
 
 Versions that I consider more working (in my understanding) will be located in the works folder
 the rest, in the progress folder there will be versions with different ideas and testing versions
+
+.env must located before parse folder
