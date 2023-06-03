@@ -16,7 +16,7 @@ bot_token = os.getenv('bot_token')
 chat_id = os.getenv('chat_id')
 
 # Read URLs from a file and store them in a list
-file_path = os.path.join(os.path.dirname(__file__), "url", "url.txt")
+file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "url", "url.txt")
 with open(file_path, "r") as file:
     urls = file.read().split(",")
 
