@@ -8,14 +8,11 @@ the rest, in the progress folder there will be versions with different ideas and
 
 .env must located before parse folder, example 
 parser_psn/
-    .env
-    .gitignore
-    LICENSE
-    README.md
-    |---parse/
-        |---progress/
+    .env <--not a folder \n
+    /parse/
+        /progress/
             psn_parser_test.py
-        |---url/
+        /url/
             url.txt
-        |---works/
+        /works/
             psn_parser_v1.py
