@@ -52,7 +52,7 @@ chat_id=&lt;your-telegram-chat-id&gt;</code></pre>
     <li>Open the crontab file:
       <pre><code>crontab -e</code></pre>
     </li>
-    <li>Add a new line to schedule the parser script. For example, to run the script every hour, add the following line:
+    <li>Add a new line to schedule the parser script. For example, to run the script every 8 hours, add the following line:
       <pre><code>0 */8 * * * cd /path/to/parser_psn &amp;&amp; /path/to/env/bin/python3.11 parser.py</code></pre>
       Replace <code>/path/to/parser_psn</code> with the actual path to the project directory.
     </li>
