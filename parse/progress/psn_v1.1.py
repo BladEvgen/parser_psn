@@ -1,12 +1,23 @@
+"""Price Checker
+
+This script fetches data from a list of URLs, scrapes the HTML content of each URL,
+and checks for changes in prices.
+It uses asynchronous programming with asyncio and aiohttp for efficient HTTP requests.
+The scraped data is stored in a SQLite database,
+and if there are any changes in prices, a notification message is sent using the Telegram Bot API.
+
+Returns:
+    None
+"""
 import asyncio
-import aiohttp
-from bs4 import BeautifulSoup
-import telebot
 import os
 import sqlite3
-from datetime import datetime
-import tracemalloc
 import time
+import tracemalloc
+from datetime import datetime
+import aiohttp
+import telebot
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
 dotenv_path = os.path.join(
@@ -15,30 +26,33 @@ dotenv_path = os.path.join(
 if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
 
-bot_token = os.getenv("bot_token")
-chat_id = os.getenv("chat_id")
+BOT_TOKEN = os.getenv("bot_token")
+CHAT_ID = os.getenv("chat_id")
 
 # Read URLs from a file and store them in a list
 file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "url", "url.txt")
 with open(file_path, "r", encoding="utf-8") as file:
-    urls = file.read().split(",")
+    URLS = file.read().split(",")
 
 # Set headers for HTTP requests
-headers = {
+HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36",
     "sec-ch-ua": '"Google Chrome";v="113", "Chromium";v="113", "Not-A.Brand";v="24"',
     "authority": "store.playstation.com",
     "sec-ch-ua-platform": '"Windows"',
 }
 
-db_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "db", "price.db")
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "db", "price.db")
 
 
 class Database:
+    """class Database interface"""
+
     def __init__(self, db_path):
         self.db_path = db_path
 
     def create_table(self):
+        """Create the database table if it does not exist"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -54,6 +68,7 @@ class Database:
             )
 
     def insert_price(self, title, current_price, previous_price):
+        """Insert a new price into the database"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -64,11 +79,13 @@ class Database:
             )
 
     def get_latest_price(self, title):
+        """Get the latest price from the database"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(
                 """
-                SELECT current_price, previous_price FROM prices WHERE title = ? ORDER BY timestamp DESC LIMIT 1
+                SELECT current_price, previous_price FROM prices WHERE title = ?
+                ORDER BY timestamp DESC LIMIT 1
             """,
                 (title,),
             )
@@ -77,11 +94,12 @@ class Database:
 
 
 class PriceChecker:
+    """Price Checker class interface"""
     def __init__(self, urls, bot_token, chat_id):
         self.urls = urls
         self.bot_token = bot_token
         self.chat_id = chat_id
-        self.db = Database(db_path)
+        self.db = Database(DB_PATH)
         self.bot = telebot.TeleBot(bot_token)
 
     async def fetch(self, session, url):
@@ -96,7 +114,7 @@ class PriceChecker:
             str: The response text.
         """
         try:
-            async with session.get(url, headers=headers) as response:
+            async with session.get(url, headers=HEADERS) as response:
                 return await response.text()
         except aiohttp.ClientError as error:
             print(f"An error occurred during the request: {error}")
@@ -137,6 +155,7 @@ class PriceChecker:
             return None
 
     async def send_message(self, message):
+        """Send a message through the Telegram Bot API"""
         self.bot.send_message(self.chat_id, message, parse_mode="HTML")
 
     async def main(self):
@@ -146,7 +165,7 @@ class PriceChecker:
         # Start tracking memory allocation
         tracemalloc.start()
         try:
-            async with aiohttp.ClientSession() as session:
+            async with aiohttp.ClientSession() as _:
                 tasks = []
                 for url in self.urls:
                     url = url.strip()
@@ -157,9 +176,7 @@ class PriceChecker:
                 results = await asyncio.gather(*tasks)
 
             # Get the current date and time
-            current_datetime = datetime.now().strftime(
-                "Current time: %d.%m.%Y\n%H:%M \n\n"
-            )
+            current_time = datetime.now().strftime("Current time: %d.%m.%Y\n%H:%M \n\n")
 
             for result in results:
                 title, price = result
@@ -188,10 +205,10 @@ class PriceChecker:
 
 
 if __name__ == "__main__":
-    if not os.path.exists(db_path):
-        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    if not os.path.exists(DB_PATH):
+        os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 
-    price_checker = PriceChecker(urls, bot_token, chat_id)
+    price_checker = PriceChecker(URLS, BOT_TOKEN, CHAT_ID)
     price_checker.db.create_table()
     loop = asyncio.get_event_loop()
     loop.run_until_complete(price_checker.main())
