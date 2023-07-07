@@ -1,10 +1,10 @@
   <h1>PlayStation Store Site Parser</h1>
   <p>Here will be versions of the PlayStation Store site parser. This script receives the <code>Title</code> and <code>Price</code> of the game and sends them to Telegram through the bot. To change the list of games for which prices will be monitored, use <code>url.txt</code>. Add links to it in the following format:</p>
-<ul>
-<https://playstation.com/example/1,<br>
-<https://playstation.com/example/2,<br>
-<https://playstation.com/example/n<br>
-</ul>
+
+<https://playstation.com/example/1, <br>
+<https://playstation.com/example/2, <br>
+<https://playstation.com/example/n <br>
+
 
   <p>Versions that are considered more working (in my understanding) will be located in the <code>works</code> folder. The rest, in the <code>progress</code> folder, there will be versions with different ideas and testing versions.</p>
 
