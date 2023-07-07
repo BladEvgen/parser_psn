@@ -1,10 +1,10 @@
   <h1>PlayStation Store Site Parser</h1>
   <p>Here will be versions of the PlayStation Store site parser. This script receives the <code>Title</code> and <code>Price</code> of the game and sends them to Telegram through the bot. To change the list of games for which prices will be monitored, use <code>url.txt</code>. Add links to it in the following format:</p>
-  <ol style="list-style-type: none;">
-    <li>https://playstation.com/example/1,</li>
-    <li>https://playstation.com/example/2,</li>
-    <li>https://playstation.com/example/n</li>
-  </ol>
+<ul>
+<https://playstation.com/example/1,<br>
+<https://playstation.com/example/2,<br>
+<https://playstation.com/example/n<br>
+</ul>
 
   <p>Versions that are considered more working (in my understanding) will be located in the <code>works</code> folder. The rest, in the <code>progress</code> folder, there will be versions with different ideas and testing versions.</p>
 
@@ -52,7 +52,7 @@ chat_id=&lt;your-telegram-chat-id&gt;</code></pre>
     <li>Open the crontab file:
       <pre><code>crontab -e</code></pre>
     </li>
-    <li>Add a new line to schedule the parser script. For example, to run the script every 8 hours, add the following line:
+    <li>Add a new line to schedule the parser script. For example, to run the script every 8 s, add the following line:
       <pre><code>0 */8 * * * cd /path/to/parser_psn &amp;&amp; /path/to/env/bin/python3.11 parser.py</code></pre>
       Replace <code>/path/to/parser_psn</code> with the actual path to the project directory.
     </li>
