@@ -16,7 +16,10 @@
       <pre><code>git clone &lt;repository-url&gt;</code></pre>
     </li>
     <li>Navigate to the project directory:
-      <pre><code>cd playstation-store-parser</code></pre>
+      <pre><code>cd parser_psn</code></pre>
+    </li>
+        <li>Create a new environment:
+      <pre><code>python3 -m venv env</code></pre>
     </li>
     <li>Install the required dependencies:
       <pre><code>pip install -r requirements.txt</code></pre>
@@ -37,7 +40,7 @@ chat_id=&lt;your-telegram-chat-id&gt;</code></pre>
   <ol>
     <li>Edit the <code>url.txt</code> file in the <code>url</code> folder and add the URLs of the PlayStation Store pages you want to monitor. Each URL should be on a separate line.</li>
     <li>Run the parser script using the following command:
-      <pre><code>python parser.py</code></pre>
+      <pre><code>python3 parser.py</code></pre>
       This will start the parser, which will fetch the title and price of each game from the provided URLs.
     </li>
     <li>The parsed information will be sent to your Telegram chat or channel using the configured bot. You can check your chat or channel to view the received messages.</li>
@@ -50,8 +53,8 @@ chat_id=&lt;your-telegram-chat-id&gt;</code></pre>
       <pre><code>crontab -e</code></pre>
     </li>
     <li>Add a new line to schedule the parser script. For example, to run the script every hour, add the following line:
-      <pre><code>0 * * * * cd /path/to/playstation-store-parser &amp;&amp; python parser.py</code></pre>
-      Replace <code>/path/to/playstation-store-parser</code> with the actual path to the project directory.
+      <pre><code>0 */8 * * * cd /path/to/parser_psn &amp;&amp; /path/to/env/bin/python3.11 parser.py</code></pre>
+      Replace <code>/path/to/parser_psn</code> with the actual path to the project directory.
     </li>
     <li>Save and exit the crontab file. The parser will now run automatically according to the scheduled interval.</li>
   </ol>
