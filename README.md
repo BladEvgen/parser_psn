@@ -21,8 +21,21 @@
         <li>Create a new environment:
       <pre><code>python3 -m venv env</code></pre>
     </li>
+    </li>
+        <li>Activate the environment:
+      <pre>
+      <ul>
+      <h3>Linux  &amp;&amp; MacOS </h3>
+      <code> source env/bin/activate </code>
+       <h3>Windows</h3>
+      <code>env/Scripts/Activate </code>
+      </ul>
+      </pre>
+    </li>
     <li>Install the required dependencies:
-      <pre><code>pip install -r requirements.txt</code></pre>
+      <pre>
+      <code>pip install -r requirements.txt</code>
+      </pre>
     </li>
   </ol>
 
