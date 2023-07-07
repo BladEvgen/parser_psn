@@ -1,3 +1,4 @@
+"""Create a telegram bot that can be used to send messages to the chat with current price of games in Playstation store"""
 import asyncio
 import aiohttp
 from bs4 import BeautifulSoup
@@ -8,16 +9,18 @@ import tracemalloc
 import time
 from dotenv import load_dotenv
 
-dotenv_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env')
+dotenv_path = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env"
+)
 if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
 
-bot_token = os.getenv('bot_token')
-chat_id = os.getenv('chat_id')
+bot_token = os.getenv("bot_token")
+chat_id = os.getenv("chat_id")
 
 # Read URLs from a file and store them in a list
 file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "url", "url.txt")
-with open(file_path, "r") as file:
+with open(file_path, "r", encoding="utf-8") as file:
     urls = file.read().split(",")
 
 # Set headers for HTTP requests
@@ -28,17 +31,36 @@ headers = {
     "sec-ch-ua-platform": '"Windows"',
 }
 
-# Function to perform an asynchronous HTTP request using aiohttp
+
 async def fetch(session, url):
+    """
+    Perform an asynchronous HTTP request using aiohttp.
+
+    Args:
+        session (aiohttp.ClientSession): The aiohttp client session.
+        url (str): The URL to fetch.
+
+    Returns:
+        str: The response text.
+    """
     try:
         async with session.get(url, headers=headers) as response:
             return await response.text()
-    except aiohttp.ClientError as e:
-        print(f"An error occurred during the request: {e}")
+    except aiohttp.ClientError as error:
+        print(f"An error occurred during the request: {error}")
         return None
 
-# Function to process each URL asynchronously
+
 async def process_url(url):
+    """
+    Process each URL asynchronously.
+
+    Args:
+        url (str): The URL to process.
+
+    Returns:
+        str: The processed result.
+    """
     try:
         async with aiohttp.ClientSession() as session:
             html = await fetch(session, url)
@@ -46,17 +68,24 @@ async def process_url(url):
                 soup = BeautifulSoup(html, "html.parser")
                 title_element = soup.find("h1")
                 price_element = soup.find("span", class_="psw-t-title-m")
-                title = title_element.text.strip() if title_element else "Title not found"
-                price = price_element.text.strip() if price_element else "Price not found"
+                title = (
+                    title_element.text.strip() if title_element else "Title not found"
+                )
+                price = (
+                    price_element.text.strip() if price_element else "Price not found"
+                )
                 return f"Title: {title}\nPrice: {price}"
             else:
                 return "Error occurred during the request."
-    except Exception as e:
-        print(f"An error occurred during the processing of the URL: {e}")
+    except Exception as error:
+        print(f"An error occurred during the processing of the URL: {error}")
         return None
 
-# Main function to run the program
+
 async def main():
+    """
+    Main function to run the program.
+    """
     # Start tracking memory allocation
     tracemalloc.start()
     try:
@@ -87,8 +116,9 @@ async def main():
             print(stat)
         time.sleep(5)
         os.system("cls" if os.name == "nt" else "clear")
-    except Exception as e:
-        print(f"An error occurred during the execution of the program: {e}")
+    except Exception as error:
+        print(f"An error occurred during the execution of the program: {error}")
+
 
 # Run the main function using the asyncio event loop
 loop = asyncio.get_event_loop()
