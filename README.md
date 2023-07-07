@@ -23,14 +23,12 @@
     </li>
     </li>
         <li>Activate the environment:
-      <pre>
       <ul>
-      <h3>Linux  &amp;&amp; MacOS </h3>
+      <h3>Linux  &amp;&amp; MacOS</h3>
       <code> source env/bin/activate </code>
        <h3>Windows</h3>
       <code>env/Scripts/Activate </code>
       </ul>
-      </pre>
     </li>
     <li>Install the required dependencies:
       <pre>
