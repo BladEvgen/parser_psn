@@ -46,7 +46,7 @@
   <ol>
     <li>https://playstation.com/example/1,</li>
     <li>https://playstation.com/example/2,</li>
-    <li>https://playstation.com/example/n,</li>
+    <li>https://playstation.com/example/n</li>
   </ol>
 
   <p>Versions that are considered more working (in my understanding) will be located in the <code>works</code> folder. The rest, in the <code>progress</code> folder, there will be versions with different ideas and testing versions.</p>
