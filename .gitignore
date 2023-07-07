@@ -161,3 +161,6 @@ cython_debug/
 
 old_versions/
 *.zip
+*.db
+parse/progress/psn_parser_test.py
+parse/progress/psn_parser_test.py
