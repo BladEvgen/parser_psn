@@ -1,4 +1,10 @@
-"""Price checker
+"""Price Checker
+
+This script fetches data from a list of URLs, scrapes the HTML content of each URL,
+and checks for changes in prices.
+It uses asynchronous programming with asyncio and aiohttp for efficient HTTP requests.
+The scraped data is stored in a SQLite database,
+and if there are any changes in prices, a notification message is sent using the Telegram Bot API.
 
 Returns:
     None
@@ -174,7 +180,7 @@ class PriceChecker:
 
             for result in results:
                 title, price = result
-                latest_price = self.db.get_latest_price(title) 
+                latest_price = self.db.get_latest_price(title)
                 if latest_price is not None:
                     previous_price = latest_price[0]
                     if previous_price != price:

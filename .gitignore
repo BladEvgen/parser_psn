@@ -160,6 +160,7 @@ cython_debug/
 #.idea/
 
 old_versions/
+progress/
 *.zip
 *.db
 parse/progress/psn_parser_test.py
