@@ -159,8 +159,8 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-old_versions/
-progress/
+parse/old_versions/
+parse/progress/*
 *.zip
 *.db
 parse/progress/psn_parser_test.py
