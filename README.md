@@ -1,4 +1,5 @@
   <h1>PlayStation Store Site Parser</h1>
+  <h2>Python version is 3.11</h2>
   <p>Here will be versions of the PlayStation Store site parser. This script receives the <code>Title</code> and <code>Price</code> of the game and sends them to Telegram through the bot. To change the list of games for which prices will be monitored, use <code>url.txt</code>. Add links to it in the following format:</p>
   <ol>
     <li>https://playstation.com/example/1,</li>
