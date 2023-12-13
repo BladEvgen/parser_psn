@@ -164,4 +164,4 @@ parse/progress/
 *.zip
 *.db
 parse/progress/psn_parser_test.py
-
+progress/
