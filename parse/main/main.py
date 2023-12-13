@@ -1,4 +1,10 @@
-"""Price checker
+"""Price Checker
+
+This script fetches data from a list of URLs, scrapes the HTML content of each URL,
+and checks for changes in prices.
+It uses asynchronous programming with asyncio and aiohttp for efficient HTTP requests.
+The scraped data is stored in a SQLite database,
+and if there are any changes in prices, a notification message is sent using the Telegram Bot API.
 
 Returns:
     None
@@ -7,7 +13,6 @@ import asyncio
 import os
 import sqlite3
 import time
-import tracemalloc
 from datetime import datetime
 import aiohttp
 import telebot
@@ -157,7 +162,6 @@ class PriceChecker:
         Main function to run the program.
         """
         # Start tracking memory allocation
-        tracemalloc.start()
         try:
             async with aiohttp.ClientSession() as _:
                 tasks = []
@@ -174,7 +178,7 @@ class PriceChecker:
 
             for result in results:
                 title, price = result
-                latest_price = self.db.get_latest_price(title) 
+                latest_price = self.db.get_latest_price(title)
                 if latest_price is not None:
                     previous_price = latest_price[0]
                     if previous_price != price:
@@ -185,15 +189,7 @@ class PriceChecker:
                     self.db.insert_price(title, price, None)
                     message = f"Title: {title}\nCurrent Price: {price}"
                     await self.send_message(message)
-
-            # Take a snapshot of memory allocation
-            snapshot = tracemalloc.take_snapshot()
-            top_stats = snapshot.statistics("lineno")
-            print("[ Top 10 Memory Usage ]")
-            for stat in top_stats[:10]:
-                print(stat)
-            time.sleep(5)
-            os.system("cls" if os.name == "nt" else "clear")
+          
         except Exception as error:
             print(f"An error occurred during the execution of the program: {error}")
 
