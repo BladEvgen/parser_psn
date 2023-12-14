@@ -7,8 +7,9 @@
     <li>https://playstation.com/example/n</li>
   </ol>
 
-  <p>Versions that are considered more working (in my understanding) will be located in the <code>works</code> folder. The rest, in the <code>progress</code> folder, there will be versions with different ideas and testing versions.</p>
+  <p>Versions that are considered more working (in my understanding) will be located in the <code>main</code> folder.</p>
 
+  <p>In <code>.env</code> you must add your <code>bot_token</code> and <code>chat_id</code></p>
   <p><code>.env</code> file must be located before the <code>parse</code> folder.</p>
 
   <h2>Installation</h2>
