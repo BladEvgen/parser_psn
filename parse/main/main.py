@@ -12,10 +12,9 @@ Returns:
 import asyncio
 import os
 import sqlite3
-import time
-from datetime import datetime
 import aiohttp
 import telebot
+from datetime import datetime
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
@@ -94,6 +93,7 @@ class Database:
 
 class PriceChecker:
     """Price Checker class interface"""
+
     def __init__(self, urls, bot_token, chat_id):
         self.urls = urls
         self.bot_token = bot_token
@@ -189,7 +189,7 @@ class PriceChecker:
                     self.db.insert_price(title, price, None)
                     message = f"Title: {title}\nCurrent Price: {price}"
                     await self.send_message(message)
-          
+
         except Exception as error:
             print(f"An error occurred during the execution of the program: {error}")
 
