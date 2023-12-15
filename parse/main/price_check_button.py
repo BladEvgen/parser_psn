@@ -1,5 +1,6 @@
 import os
 import requests
+import sqlite3
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from telegram import Update
@@ -13,9 +14,7 @@ if os.path.exists(dotenv_path):
 
 BOT_TOKEN = os.getenv("bot_token")
 
-file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "url", "url.txt")
-with open(file_path, "r", encoding="utf-8") as file:
-    URLS = file.read().split(",")
+db_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "url", "url.db")
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36",
@@ -26,8 +25,17 @@ HEADERS = {
 
 
 class PriceChecker:
-    def __init__(self, urls):
-        self.urls = urls
+    def __init__(self):
+        self.urls = self.get_urls_from_db()
+
+    def get_urls_from_db(self):
+        urls = []
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT url FROM urls")
+
+            urls = [row[0] for row in cursor.fetchall()]
+        return urls
 
     def fetch(self, url):
         try:
@@ -80,7 +88,7 @@ def handle_start(update: Update, context: CallbackContext):
         "Hi, I'm the PSN parser bot!\n\n"
         "You can find the full instructions and the source code on GitHub:\n"
         "[GitHub Repository](https://github.com/BladEvgen/parser_psn)\n\n"
-        "To use me, just send the command:\n\n(please wait some time and i'll try to send the message with response)\n\n"
+        "To use me, just send the command:\n\n(please wait some time and I'll try to send the message with the response)\n\n"
         "/check\n\n"
         "I'll send you the current prices for the already added URLs.\n"
         "Please note that prices are for Turkey PSN and include both Ps5 and Ps4 games."
@@ -90,11 +98,8 @@ def handle_start(update: Update, context: CallbackContext):
 
 def handle_check(update: Update, context: CallbackContext):
     chat_id = update.message.chat_id
-    price_checker = context.user_data.get("price_checker")
-    if not price_checker:
-        price_checker = PriceChecker(URLS)
-        context.user_data["price_checker"] = price_checker
-
+    price_checker = PriceChecker()
+    context.user_data["price_checker"] = price_checker
     price_checker.main(context, chat_id)
 
 

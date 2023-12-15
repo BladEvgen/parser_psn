@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fastapi URL</title>
+</head>
+<body>
+    <h2>Add url</h2>
+    <form method="post" action="/add_url/">
+        <label for="url">URL:</label>
+        <input type="text" id="url" name="url" required>
+        <button type="submit">Add URL</button>
+    </form>
+    <br>
+    <h2>Текущие ссылки</h2>
+    <ul>
+        {% for line in file_content %}
+            <a href="{{ line.strip() }}" target="_blank"><li>{{ line.strip() }}</li></a>
+        {% endfor %}
+    </ul>
+</body>
+</html>
