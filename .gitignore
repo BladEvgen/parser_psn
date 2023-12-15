@@ -165,3 +165,5 @@ parse/progress/
 *.db
 parse/progress/psn_parser_test.py
 progress/
+parse/.DS_Store
+.DS_Store

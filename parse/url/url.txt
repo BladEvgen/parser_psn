@@ -1,4 +1,4 @@
-https://store.playstation.com/en-tr/product/EP9000-PPSA01341_00-DEMONSSOULS00000,
-https://store.playstation.com/en-tr/product/EP0102-PPSA07412_00-RE4RMAINGAME0000,
-https://store.playstation.com/en-tr/product/EP9000-CUSA01715_00-0000GODOFWAR3PS4,
-https://store.playstation.com/en-tr/product/EP1001-PPSA06225_00-QUARRYDLXED00000
+https://www.playstation.com/en-tr/games/resident-evil-4-remake/,
+https://www.playstation.com/en-tr/games/mortal-kombat-1/,
+https://www.playstation.com/en-tr/games/cyberpunk-2077/phantom-liberty/,
+https://www.playstation.com/en-tr/games/dead-space/
