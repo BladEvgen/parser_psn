@@ -9,10 +9,11 @@ from telegram.ext import Updater, CommandHandler, CallbackContext
 dotenv_path = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env"
 )
+
 if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
 
-BOT_TOKEN = os.getenv("bot_token")
+BOT_TOKEN = os.getenv("bot_token_2")
 
 db_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "url", "url.db")
 
