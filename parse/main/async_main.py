@@ -1,13 +1,13 @@
-import asyncio
 import os
-from datetime import datetime
+import asyncio
 import aiosqlite
-import aiohttp
+from aiogram import Bot
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from aiogram import Bot, types
-from aiogram.dispatcher import Dispatcher
-from aiogram.types import ParseMode
+from aiogram.enums import ParseMode
+from asyncio.exceptions import TimeoutError
+from aiohttp import ClientSession, ClientError
+from aiohttp.client_exceptions import ServerTimeoutError
 
 dotenv_path = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env"
@@ -18,14 +18,15 @@ if os.path.exists(dotenv_path):
 BOT_TOKEN = os.getenv("bot_token")
 CHAT_ID = os.getenv("chat_id")
 
-# Read URLs from a file and store them in a list
 file_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "url", "url.txt")
 with open(file_path, "r", encoding="utf-8") as file:
     URLS = file.read().split(",")
 
-# Set headers for HTTP requests
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36",
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)"
+        " Chrome/113.0.0.0 Safari/537.36"
+    ),
     "sec-ch-ua": '"Google Chrome";v="113", "Chromium";v="113", "Not-A.Brand";v="24"',
     "authority": "store.playstation.com",
     "sec-ch-ua-platform": '"Windows"',
@@ -33,156 +34,140 @@ HEADERS = {
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "db", "price.db")
 
+RETRY_LIMIT = 3
+TIMEOUT = 10  
+
 
 class Database:
-    """class Database interface"""
+    """Database interface for managing price records."""
 
-    def __init__(self, db_path):
+    def __init__(self, db_path: str):
         self.db_path = db_path
 
-    async def create_table(self):
-        """Create the database table if it does not exist"""
+    async def create_table(self) -> None:
+        """Create the database table if it does not exist."""
         async with aiosqlite.connect(self.db_path) as conn:
-            cursor = await conn.cursor()
-            await cursor.execute(
+            await conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS prices (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     title TEXT,
-                    current_price REAL,
-                    previous_price REAL,
+                    current_price TEXT,
+                    previous_price TEXT,
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
-            """
+                """
             )
             await conn.commit()
 
-    async def insert_price(self, title, current_price, previous_price):
-        """Insert a new price into the database"""
+    async def insert_price(self, title: str, current_price: str, previous_price: str | None) -> None:
+        """Insert a new price into the database."""
         async with aiosqlite.connect(self.db_path) as conn:
-            cursor = await conn.cursor()
-            await cursor.execute(
+            await conn.execute(
                 """
-                INSERT INTO prices (title, current_price, previous_price) VALUES (?, ?, ?)
-            """,
+                INSERT INTO prices (title, current_price, previous_price) 
+                VALUES (?, ?, ?)
+                """,
                 (title, current_price, previous_price),
             )
             await conn.commit()
 
-    async def get_latest_price(self, title):
-        """Get the latest price from the database"""
+    async def get_latest_price(self, title: str) -> tuple[str, str | None] | None:
+        """Get the latest price from the database."""
         async with aiosqlite.connect(self.db_path) as conn:
-            cursor = await conn.cursor()
-            await cursor.execute(
+            cursor = await conn.execute(
                 """
                 SELECT current_price, previous_price FROM prices WHERE title = ?
                 ORDER BY timestamp DESC LIMIT 1
-            """,
+                """,
                 (title,),
             )
             result = await cursor.fetchone()
+            await cursor.close()
         return result
 
 
 class PriceChecker:
-    """Price Checker class interface"""
+    """Price Checker class interface."""
 
-    def __init__(self, urls, bot_token, chat_id):
+    def __init__(self, urls: list[str], bot_token: str, chat_id: str):
         self.urls = urls
         self.bot_token = bot_token
         self.chat_id = chat_id
         self.db = Database(DB_PATH)
         self.bot = Bot(token=bot_token)
-        self.dp = Dispatcher(self.bot)
 
-    async def fetch(self, session, url):
-        """
-        Perform an asynchronous HTTP request using aiohttp.
+    async def fetch(self, session: ClientSession, url: str) -> str | None:
+        """Perform an asynchronous HTTP request with retries."""
+        for attempt in range(RETRY_LIMIT):
+            try:
+                async with session.get(url, headers=HEADERS, timeout=TIMEOUT) as response:
+                    response.raise_for_status()
+                    return await response.text()
+            except (ClientError, ServerTimeoutError, TimeoutError) as error:
+                print(f"Attempt {attempt + 1}/{RETRY_LIMIT} failed: {error}")
+                if attempt + 1 == RETRY_LIMIT:
+                    return None
 
-        Args:
-            session (aiohttp.ClientSession): The aiohttp client session.
-            url (str): The URL to fetch.
-
-        Returns:
-            str: The response text.
-        """
+    async def process_url(self, session: ClientSession, url: str) -> tuple[str, str] | None:
+        """Process each URL asynchronously."""
         try:
-            async with session.get(url, headers=HEADERS) as response:
-                return await response.text()
-        except aiohttp.ClientError as error:
-            print(f"An error occurred during the request: {error}")
+            html = await self.fetch(session, url)
+            if html:
+                soup = BeautifulSoup(html, "html.parser")
+                title = (
+                    soup.find("h1").get_text(strip=True)
+                    if soup.find("h1")
+                    else "Title not found"
+                )
+                price = (
+                    soup.find("span", class_="psw-t-title-m").get_text(strip=True)
+                    if soup.find("span", class_="psw-t-title-m")
+                    else "Price not found"
+                )
+                return title, price
             return None
-
-    async def process_url(self, url):
-        """
-        Process each URL asynchronously.
-
-        Args:
-            url (str): The URL to process.
-
-        Returns:
-            str: The processed result.
-        """
-        try:
-            async with aiohttp.ClientSession() as session:
-                html = await self.fetch(session, url)
-                if html is not None:
-                    soup = BeautifulSoup(html, "html.parser")
-                    title_element = soup.find("h1")
-                    price_element = soup.find("span", class_="psw-t-title-m")
-                    title = (
-                        title_element.text.strip()
-                        if title_element
-                        else "Title not found"
-                    )
-                    price = (
-                        price_element.text.strip()
-                        if price_element
-                        else "Price not found"
-                    )
-                    return title, price
-                else:
-                    return "Error occurred during the request."
         except Exception as error:
             print(f"An error occurred during the processing of the URL: {error}")
             return None
 
-    async def send_message(self, message):
-        """Send a message through the Telegram Bot API"""
-        await self.bot.send_message(self.chat_id, message, parse_mode=ParseMode.HTML)
+    async def send_message(self, message: str) -> None:
+        """Send a message through the Telegram Bot API."""
+        try:
+            await self.bot.send_message(self.chat_id, message, parse_mode=ParseMode.HTML)
+        except Exception as error:
+            print(f"Failed to send message: {error}")
 
-    async def main(self):
-        """
-        Main function to run the program.
-        """
+    async def main(self) -> None:
+        """Main function to run the program."""
         try:
             await self.db.create_table()
 
-            tasks = []
-            for url in self.urls:
-                url = url.strip()
-                task = asyncio.create_task(self.process_url(url))
-                tasks.append(task)
+            async with ClientSession() as session:
+                tasks = [
+                    self.process_url(session, url.strip()) for url in self.urls
+                ]
 
-            # Gather results from all the tasks
-            results = await asyncio.gather(*tasks)
+                results = await asyncio.gather(*tasks)
 
-            # Get the current date and time
-            current_time = datetime.now().strftime("Current time: %d.%m.%Y\n%H:%M \n\n")
-
-            for result in results:
-                title, price = result
-                latest_price = await self.db.get_latest_price(title)
-                if latest_price is not None:
-                    previous_price = latest_price[0]
-                    if previous_price != price:
-                        await self.db.insert_price(title, price, previous_price)
-                        message = f"Title: {title}\nCurrent Price: {price}\nPrevious Price: {previous_price}"
-                        await self.send_message(message)
-                else:
-                    await self.db.insert_price(title, price, None)
-                    message = f"Title: {title}\nCurrent Price: {price}"
-                    await self.send_message(message)
+                for result in results:
+                    if result:
+                        title, price = result
+                        latest_price = await self.db.get_latest_price(title)
+                        if latest_price:
+                            previous_price = latest_price[0]
+                            if previous_price != price:
+                                await self.db.insert_price(
+                                    title, price, previous_price
+                                )
+                                message = (
+                                    f"Title: {title}\nCurrent Price: {price}\nPrevious Price: {previous_price}"
+                                )
+                                await self.send_message(message)
+                        else:
+                            await self.db.insert_price(title, price, None)
+                            message = f"Title: {title}\nCurrent Price: {price}"
+                            await self.send_message(message)
 
         except Exception as error:
             print(f"An error occurred during the execution of the program: {error}")
@@ -193,5 +178,4 @@ if __name__ == "__main__":
         os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 
     price_checker = PriceChecker(URLS, BOT_TOKEN, CHAT_ID)
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(price_checker.main())
+    asyncio.run(price_checker.main())
